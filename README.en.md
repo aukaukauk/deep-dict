@@ -22,6 +22,10 @@ Deep Dict is a reading-aid dictionary, not an encyclopedia or a full English lea
 
 It does not aim to cover full etymology, pronunciation, examples, collocations, grammar notes, or encyclopedic entries for people, organizations, brands, products, and events.
 
+## Examples
+
+<img src="assets/sample-token.png" alt="Deep Dict Lookup sample: token" width="520">
+
 ## Word Sources
 
 The candidate word list combines a broad frequency-based source with public-corpus supplements. The project first extracted about 100,000 English candidate words from word-frequency data and removed items clearly unsuitable as dictionary entries. It then supplemented this base list with terms extracted from LessWrong, the last two years of Hacker News, and Reddit comment corpora, in order to better cover language used in forums, technical communities, and contemporary online discussion. A smaller core English word list was also retained for basic reading coverage.
