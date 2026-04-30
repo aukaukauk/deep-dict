@@ -205,7 +205,7 @@ def write_csv(path, rows, limit=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Analyze LessWrong corpus coverage against the dictionary word list.")
-    parser.add_argument("--corpus", type=Path, default=Path("/Users/haique/Downloads/lesswrong_full.json"))
+    parser.add_argument("--corpus", type=Path, default=Path("data/raw/lesswrong_full.json"))
     parser.add_argument("--words", type=Path, default=Path("data/lemma-words.csv"))
     parser.add_argument("--wordforms", type=Path, default=Path("data/lemma-wordforms.csv"))
     parser.add_argument("--output-dir", type=Path, default=Path("outputs/lesswrong-coverage"))

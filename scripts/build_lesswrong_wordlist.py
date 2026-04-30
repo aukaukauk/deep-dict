@@ -414,7 +414,7 @@ def write_word_targets(path, words):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Build a cleaned LessWrong-derived generation word list.")
-    parser.add_argument("--corpus", type=Path, default=Path("/Users/haique/Downloads/lesswrong_full.json"))
+    parser.add_argument("--corpus", type=Path, default=Path("data/raw/lesswrong_full.json"))
     parser.add_argument("--known-words", type=Path, default=Path("data/generation-targets/oxford5000/words.csv"))
     parser.add_argument("--known-phrases", type=Path, default=Path("outputs/wordlist-builds/oxford5000/phrases.csv"))
     parser.add_argument("--known-wordforms", type=Path, default=Path("data/lemma-wordforms.csv"))
