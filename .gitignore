@@ -1,0 +1,20 @@
+.DS_Store
+.venv/
+.claude/
+__pycache__/
+*.py[cod]
+
+# Generated dictionary packages and source bundles
+build/
+
+# Generated entries, audits, run logs, and intermediate analysis outputs
+outputs/
+
+# Large third-party source dumps
+vendor/ecdict/
+data/wiki/
+*.zim
+
+# Local editor configuration can stay in this repo because it keeps VS Code responsive here.
+!.vscode/
+!.vscode/settings.json

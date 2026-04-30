@@ -1,0 +1,21 @@
+{
+  "git.enabled": false,
+  "git.autorefresh": false,
+  "git.autoRepositoryDetection": false,
+  "search.exclude": {
+    "**/build": true,
+    "**/outputs": true,
+    "**/.venv": true,
+    "**/vendor/ecdict": true
+  },
+  "files.watcherExclude": {
+    "**/build/**": true,
+    "**/outputs/**": true,
+    "**/.venv/**": true,
+    "**/vendor/ecdict/**": true
+  },
+  "files.exclude": {
+    "**/outputs/entries": true,
+    "**/outputs/entries-oxford5000": true
+  }
+}

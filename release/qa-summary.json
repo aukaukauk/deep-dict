@@ -1,0 +1,105 @@
+{
+  "total": 100683,
+  "included": 91813,
+  "excluded": 8870,
+  "included_confidence_dist": [
+    {
+      "score": 7,
+      "count": 1076
+    },
+    {
+      "score": 8,
+      "count": 10383
+    },
+    {
+      "score": 9,
+      "count": 57816
+    },
+    {
+      "score": 10,
+      "count": 22538
+    }
+  ],
+  "included_suitability_dist": [
+    {
+      "score": 5,
+      "count": 24
+    },
+    {
+      "score": 6,
+      "count": 4045
+    },
+    {
+      "score": 7,
+      "count": 37274
+    },
+    {
+      "score": 8,
+      "count": 34739
+    },
+    {
+      "score": 9,
+      "count": 13240
+    },
+    {
+      "score": 10,
+      "count": 2491
+    }
+  ],
+  "included_confidence_avg": 9.108949713003605,
+  "included_suitability_avg": 7.703593173080065,
+  "high_risk_rule": "include=true and (meaning_confidence <= 7 or suitability_score <= 6)",
+  "high_risk_count": 4069,
+  "excluded_reason_dist": [
+    {
+      "reason": "too_uncertain",
+      "count": 8122
+    },
+    {
+      "reason": "misspelling_or_fragment",
+      "count": 520
+    },
+    {
+      "reason": "not_english_word",
+      "count": 86
+    },
+    {
+      "reason": "not_useful_for_reading",
+      "count": 68
+    },
+    {
+      "reason": "nonstandard_contraction_spelling",
+      "count": 52
+    },
+    {
+      "reason": "abbreviation_or_acronym",
+      "count": 7
+    },
+    {
+      "reason": "profanity_or_slur",
+      "count": 7
+    },
+    {
+      "reason": "proper_name_or_brand",
+      "count": 5
+    },
+    {
+      "reason": "username_or_platform_artifact",
+      "count": 3
+    }
+  ],
+  "excluded_confidence_dist": [
+    {
+      "score": 0,
+      "count": 8863
+    },
+    {
+      "score": 9,
+      "count": 6
+    },
+    {
+      "score": 10,
+      "count": 1
+    }
+  ]
+}

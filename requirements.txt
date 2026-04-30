@@ -1,0 +1,4 @@
+datasets
+huggingface_hub
+pyarrow
+wordfreq==3.1.1
