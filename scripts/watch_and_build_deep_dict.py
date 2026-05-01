@@ -96,15 +96,15 @@ def build_dictionary(args, log):
         "--output-dir",
         str(args.build_dir),
         "--dict-name",
-        "Deep Dict",
+        "DeepDict",
         "--package-name",
         "DeepDict",
         "--display-name",
-        "Deep Dict",
+        "DeepDict",
         "--bundle-id",
         "org.deepdict.dictionary.en-zh",
         "--manufacturer",
-        "Deep Dict Project",
+        "DeepDict Project",
         "--xml-name",
         "DeepDict.xml",
         "--clean",
@@ -125,7 +125,7 @@ def build_dictionary(args, log):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Wait for generation to finish, then build Deep Dict.")
+    parser = argparse.ArgumentParser(description="Wait for generation to finish, then build DeepDict.")
     parser.add_argument("--input", type=Path, default=Path("data/generation-targets/merged-clean/words.csv"))
     parser.add_argument("--entries-dir", type=Path, default=Path("outputs/entries-merged-clean"))
     parser.add_argument("--errors-dir", type=Path, default=Path("outputs/errors-merged-clean"))

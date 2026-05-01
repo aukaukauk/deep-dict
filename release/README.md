@@ -1,6 +1,6 @@
-# Deep Dict Release
+# DeepDict Release
 
-This directory contains local release artifacts for Deep Dict.
+This directory contains local release artifacts for DeepDict.
 
 ## Files
 
@@ -18,4 +18,4 @@ Extract `DeepDict.dictionary.zip`, then copy `DeepDict.dictionary` into:
 ~/Library/Dictionaries/
 ```
 
-Open Dictionary.app and enable `Deep Dict` in settings.
+Open Dictionary.app and enable `DeepDict` in settings.

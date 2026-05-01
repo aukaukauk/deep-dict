@@ -1,8 +1,8 @@
-# Deep Dict
+# DeepDict
 
 [中文说明](README.md)
 
-Deep Dict is an English-Chinese dictionary for macOS Dictionary.app and the system Lookup feature. It is designed primarily for native Chinese speakers who read English frequently, with the goal of providing concise Chinese glosses while minimizing interruption to reading.
+DeepDict is an English-Chinese dictionary for macOS Dictionary.app and the system Lookup feature. It is designed primarily for native Chinese speakers who read English frequently, with the goal of providing concise Chinese glosses while minimizing interruption to reading.
 
 Entries were generated in batch with DeepSeek V4 Pro. The current version generated 100,683 candidate entries, of which 91,813 were included in the final dictionary. The generation process used about 257M tokens.
 
@@ -14,17 +14,17 @@ Extract `release/DeepDict.dictionary.zip`, then copy `DeepDict.dictionary` to:
 ~/Library/Dictionaries/
 ```
 
-Open Dictionary.app and enable `Deep Dict` in settings.
+Open Dictionary.app and enable `DeepDict` in settings.
 
 ## Scope
 
-Deep Dict is a reading-aid dictionary, not an encyclopedia or a full English learning dictionary. It is intended for quickly checking meanings while reading English articles, papers, forums, and technical documentation, with short Chinese glosses shown inside the macOS Lookup popup.
+DeepDict is a reading-aid dictionary, not an encyclopedia or a full English learning dictionary. It is intended for quickly checking meanings while reading English articles, papers, forums, and technical documentation, with short Chinese glosses shown inside the macOS Lookup popup.
 
 It does not aim to cover full etymology, pronunciation, examples, collocations, grammar notes, or encyclopedic entries for people, organizations, brands, products, and events.
 
 ## Examples
 
-<img src="assets/sample-token.png" alt="Deep Dict Lookup sample: token" width="520">
+<img src="assets/sample-token.png" alt="DeepDict Lookup sample: token" width="520">
 
 ## Word Sources
 
@@ -55,7 +55,7 @@ python scripts/generate_entries.py --workers 64
 Building the macOS dictionary requires Apple's Dictionary Development Kit:
 
 ```sh
-python scripts/build_apple_dictionary_source.py --entries-dir outputs/entries-merged-clean --output-dir build/deep-dict --dict-name "Deep Dict" --package-name DeepDict --display-name "Deep Dict" --bundle-id org.deepdict.dictionary.en-zh --manufacturer "Deep Dict Project" --xml-name DeepDict.xml --clean
+python scripts/build_apple_dictionary_source.py --entries-dir outputs/entries-merged-clean --output-dir build/deep-dict --dict-name "DeepDict" --package-name DeepDict --display-name "DeepDict" --bundle-id org.deepdict.dictionary.en-zh --manufacturer "DeepDict Project" --xml-name DeepDict.xml --clean
 make -C build/deep-dict DICT_BUILD_TOOL_DIR="/path/to/Dictionary Development Kit"
 make -C build/deep-dict install
 ```
