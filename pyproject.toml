@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "deepdict"
 version = "2.0.0"
-description = "English-Chinese reading-aid dictionary generated with LLMs"
+description = "Offline English-Chinese dictionary generated with LLMs"
 requires-python = ">=3.9"
-dependencies = ["wordfreq==3.1.1"]
+dependencies = ["wordfreq==3.1.1", "mdict-utils"]
 
 [project.optional-dependencies]
 # Only needed to rebuild the Hacker News / Reddit candidate word lists.

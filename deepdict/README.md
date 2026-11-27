@@ -12,12 +12,13 @@ python3 -m venv .venv
 .venv/bin/pip install -e .
 ```
 
-还需要 `zstd` 命令，以及两样放在本地、不进 git 的资源：
+还需要一样放在本地、不进 git 的资源：
 
 | 资源 | 默认位置 | 用途 |
 | --- | --- | --- |
 | ECDICT | `work/vendor/ecdict/ecdict.csv` | 质量扫描时做交叉核对 |
-| Apple Dictionary Development Kit | `work/vendor/ddk/` | 编译 macOS 词典。在 Xcode 的 Additional Tools 里 |
+
+只有编译 macOS 词典包时才需要 Apple 的 Dictionary Development Kit（在 Xcode 的 Additional Tools 里），默认放在 `work/vendor/ddk/`。
 
 ## 本地工作区
 
@@ -29,12 +30,13 @@ python3 -m venv .venv
 | `work/qa/` | 质量扫描和双模型投票的结果 |
 | `work/verify/` | 模型审查的逐词判决 |
 | `work/runs/` | 各次运行的日志和汇总 |
-| `work/build/` | 词典构建目录 |
+| `work/build/` | macOS 词典的构建目录 |
+| `work/build-formats/` | MDict 和 StarDict 的中间文件 |
 
 第一次使用时先解出词条：
 
 ```sh
-mkdir -p work && zstd -dc dictionary/entries.tar.zst | tar -xf - -C work
+.venv/bin/python -m deepdict.cli.archive unpack
 ```
 
 ## 步骤
@@ -100,35 +102,41 @@ A 层是有两个以上强信号的，B 层有一个，C 层只是模型自评�
 
 按风险层和词频分层抽样，输出 `work/qa/gold-sample.csv`。人工在 `label` 列填 ok、wrong_word、fabricated、wrong_senses 或 partly_wrong，之后可以算出词典的错误率。
 
-### 6. 构建词典
+### 6. 打包
+
+词条有改动后，按下面的顺序更新 `dictionary/` 里的文件。
+
+更新词条归档和收录词表：
+
+```sh
+.venv/bin/python -m deepdict.cli.archive pack
+```
+
+生成 MDict 和 StarDict 两个包。命令会把生成的文件读回来，逐条和源数据核对：
+
+```sh
+.venv/bin/python -m deepdict.cli.build_formats
+```
+
+生成 macOS 词典的源文件：
 
 ```sh
 .venv/bin/python -m deepdict.cli.build_apple --clean
 ```
 
+编译 macOS 词典，结果是 `work/build/objects/DeepDict.dictionary`。把末尾的 `all` 换成 `all install` 可以直接装到本机：
+
 ```sh
 make -C work/build DICT_BUILD_TOOL_DIR="$PWD/work/vendor/ddk" all
 ```
 
-编译结果是 `work/build/objects/DeepDict.dictionary`。在后一条命令末尾把 `all` 换成 `all install` 可以直接装到本机。
-
-### 7. 更新成品
-
-词条有改动后，更新 `dictionary/` 里的三个文件。
-
-词条压缩包：
-
-```sh
-(cd work && find entries -name '*.json' | LC_ALL=C sort | COPYFILE_DISABLE=1 tar -cf - --no-xattrs -T - | zstd -19 -T0 -q -f -o ../dictionary/entries.tar.zst)
-```
-
-词典安装包：
+打成 zip：
 
 ```sh
 ditto -c -k --keepParent work/build/objects/DeepDict.dictionary dictionary/DeepDict.dictionary.zip
 ```
 
-收录词表 `included-words.csv` 是所有 `include` 为 `true` 的词，按字母排序。
+三种词典包共用同一份词条。macOS 版的排版在 `build/render.py`，MDict 和 StarDict 共用 `build/html.py`，后者把样式写在词条内，颜色在深色和浅色界面下都能看清。
 
 ## 决定不做的
 

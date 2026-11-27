@@ -4,14 +4,16 @@
 
 | 文件 | 内容 |
 | --- | --- |
-| `DeepDict.dictionary.zip` | 可直接安装的 macOS 词典包 |
-| `entries.tar.zst` | 全部 106,879 条词条记录，一词一个 JSON，包括被排除的词 |
+| `DeepDict.dictionary.zip` | macOS 词典包，用于系统自带的"词典"应用和查询弹窗 |
+| `DeepDict.mdx` | MDict 格式，用于欧路词典、GoldenDict、MDict 等 |
+| `DeepDict.stardict.zip` | StarDict 格式，用于 GoldenDict、KOReader 等 |
+| `entries.jsonl.gz` | 全部 106,879 条词条记录，一行一个 JSON，包括被排除的词 |
 | `included-words.csv` | 最终收录的 96,669 个词 |
 | `corrections.jsonl` | 人工修正过的 19 条词条 |
 
-## 安装
+三种词典包的内容相同，都是收录的 96,669 个词。安装方法见仓库根目录的 README。
 
-解压 `DeepDict.dictionary.zip`，把 `DeepDict.dictionary` 复制到 `~/Library/Dictionaries/`，然后在 Dictionary.app 的设置里勾选 `DeepDict`。
+MDict 和 StarDict 两个包生成后做过回读校验：用打包库自带的读取器和另一个独立的读取库各读一遍，词条数和内容都与源数据一致。但它们还没有在欧路词典、GoldenDict、KOReader 这些应用里逐一实测过显示效果。
 
 ## 数字
 
@@ -27,7 +29,7 @@
 
 ## 词条格式
 
-解开 `entries.tar.zst` 得到 `entries/` 目录，每个文件是一条记录：
+`entries.jsonl.gz` 解压后每行是一条记录，按词头排序。下面是一条记录展开后的样子：
 
 ```json
 {
