@@ -6,11 +6,11 @@ from pathlib import Path
 
 
 DEFAULT_SOURCES = [
-    Path("data/generation-targets/wordfreq-r100000-clean/words.csv"),
-    Path("data/generation-targets/oxford5000/words.csv"),
-    Path("data/generation-targets/lesswrong/words.csv"),
-    Path("data/generation-targets/hacker-news/words.csv"),
-    Path("data/generation-targets/reddit-comments/words.csv"),
+    Path("wordlists/wordfreq.csv"),
+    Path("wordlists/oxford5000.csv"),
+    Path("wordlists/lesswrong.csv"),
+    Path("wordlists/hacker-news.csv"),
+    Path("wordlists/reddit.csv"),
 ]
 
 
@@ -40,12 +40,12 @@ def parse_args():
     parser.add_argument(
         "--targets",
         type=Path,
-        default=Path("data/generation-targets/merged-clean/words.csv"),
+        default=Path("wordlists/merged.csv"),
     )
     parser.add_argument(
         "--summary",
         type=Path,
-        default=Path("outputs/wordlist-builds/merged-clean/summary.json"),
+        default=Path("work/wordlist-builds/merged-clean/summary.json"),
     )
     return parser.parse_args()
 

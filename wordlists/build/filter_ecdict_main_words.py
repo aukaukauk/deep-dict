@@ -289,11 +289,11 @@ def write_rejected_sample(path, rejected, limit):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Filter ECDICT headwords into a cleaner main-dictionary supplement.")
-    parser.add_argument("--ecdict", type=Path, default=Path("vendor/ecdict/ecdict.csv"))
-    parser.add_argument("--current-words", type=Path, default=Path("data/lemma-words.csv"))
-    parser.add_argument("--output-dir", type=Path, default=Path("outputs/ecdict-filter"))
-    parser.add_argument("--clean-all", type=Path, default=Path("data/ecdict-clean-words.csv"))
-    parser.add_argument("--clean-new", type=Path, default=Path("data/ecdict-clean-new-words.csv"))
+    parser.add_argument("--ecdict", type=Path, default=Path("work/vendor/ecdict/ecdict.csv"))
+    parser.add_argument("--current-words", type=Path, default=Path("work/wordlist-builds/lemma-words.csv"))
+    parser.add_argument("--output-dir", type=Path, default=Path("work/ecdict-filter"))
+    parser.add_argument("--clean-all", type=Path, default=Path("work/wordlist-builds/ecdict-clean-words.csv"))
+    parser.add_argument("--clean-new", type=Path, default=Path("work/wordlist-builds/ecdict-clean-new-words.csv"))
     parser.add_argument("--rejected-sample-limit", type=int, default=2000)
     return parser.parse_args()
 

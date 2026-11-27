@@ -53,12 +53,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--input",
-        default="vendor/ecdict/ecdict.csv",
+        default="work/vendor/ecdict/ecdict.csv",
         help="Path to ECDICT CSV.",
     )
     parser.add_argument(
         "--output",
-        default="data/ecdict-wordforms.csv",
+        default="work/wordlist-builds/ecdict-wordforms.csv",
         help="Output CSV path.",
     )
     args = parser.parse_args()

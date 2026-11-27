@@ -114,7 +114,7 @@ def parse_args():
     parser.add_argument("--risk", type=Path, default=Path("work/qa/risk-ranked.csv"))
     parser.add_argument("--tiers", default="A", help="Comma-separated tiers to verify, e.g. A,B")
     parser.add_argument("--entries", type=Path, default=Path("work/entries"))
-    parser.add_argument("--ecdict", type=Path, default=Path("vendor/ecdict/ecdict.csv"))
+    parser.add_argument("--ecdict", type=Path, default=Path("work/vendor/ecdict/ecdict.csv"))
     parser.add_argument("--out", type=Path, default=Path("work/verify"))
     parser.add_argument("--error-dir", type=Path, default=Path("work/verify-errors"))
     parser.add_argument("--run-summary-dir", type=Path, default=Path("work/runs/verify"))

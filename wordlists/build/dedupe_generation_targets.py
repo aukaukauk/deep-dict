@@ -8,11 +8,11 @@ from pathlib import Path
 
 
 DEFAULT_SOURCES = [
-    ("oxford5000", Path("data/generation-targets/oxford5000/words.csv")),
-    ("wordfreq-top10000-clean", Path("data/generation-targets/wordfreq-top10000-clean/words.csv")),
-    ("lesswrong", Path("data/generation-targets/lesswrong/words.csv")),
-    ("hacker-news", Path("data/generation-targets/hacker-news/words.csv")),
-    ("reddit-comments", Path("data/generation-targets/reddit-comments/words.csv")),
+    ("oxford5000", Path("wordlists/oxford5000.csv")),
+    ("wordfreq", Path("wordlists/wordfreq.csv")),
+    ("lesswrong", Path("wordlists/lesswrong.csv")),
+    ("hacker-news", Path("wordlists/hacker-news.csv")),
+    ("reddit", Path("wordlists/reddit.csv")),
 ]
 
 
@@ -79,7 +79,7 @@ def parse_args():
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("outputs/wordlist-builds/dedupe-generation-targets"),
+        default=Path("work/wordlist-builds/dedupe-generation-targets"),
     )
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()

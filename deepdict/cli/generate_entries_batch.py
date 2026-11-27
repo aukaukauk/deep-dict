@@ -16,7 +16,7 @@ Backends:
 Usage:
   # subscription backend, 50/batch, 5 concurrent (the config used for V2)
   python3 -m deepdict.cli.generate_entries_batch \
-      --words data/generation-targets/merged-clean/words.csv \
+      --words wordlists/merged.csv \
       --backend codex --batch-size 50 --workers 5 --reasoning low \
       --out-dir work/entries
 """
@@ -117,7 +117,7 @@ def codex_generate(prompt, reasoning, model, timeout):
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--words", type=Path, default=Path("data/generation-targets/merged-clean/words.csv"))
+    parser.add_argument("--words", type=Path, default=Path("wordlists/merged.csv"))
     parser.add_argument("--prompt", type=Path, default=Path("deepdict/prompts/entry-generation-system.md"))
     parser.add_argument("--out-dir", type=Path, default=Path("work/entries"))
     parser.add_argument("--failures-dir", type=Path, default=None,

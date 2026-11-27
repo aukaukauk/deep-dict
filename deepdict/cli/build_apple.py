@@ -3,7 +3,7 @@
 
 Usage:
   python3 -m deepdict.cli.build_apple --entries-dir work/entries \
-      --output-dir build/deep-dict-v2 --clean
+      --output-dir work/build --clean
 """
 
 import argparse
@@ -116,14 +116,14 @@ clean:
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--entries-dir", type=Path, default=Path("work/entries"))
-    parser.add_argument("--wordforms", type=Path, default=Path("data/lemma-wordforms.csv"))
+    parser.add_argument("--wordforms", type=Path, default=Path("work/wordlist-builds/lemma-wordforms.csv"))
     parser.add_argument("--index-mode", choices=["headword", "wordforms"], default="headword")
-    parser.add_argument("--output-dir", type=Path, default=Path("build/deep-dict-v2"))
+    parser.add_argument("--output-dir", type=Path, default=Path("work/build"))
     parser.add_argument("--dict-name", default="DeepDict")
     parser.add_argument("--package-name", default="DeepDict")
     parser.add_argument("--display-name", default="DeepDict")
     parser.add_argument("--bundle-id", default="org.deepdict.dictionary.en-zh")
-    parser.add_argument("--version", default="0.2.0")
+    parser.add_argument("--version", default="2.0.0")
     parser.add_argument("--manufacturer", default="DeepDict Project")
     parser.add_argument("--copyright", default="Generated dictionary data. Review before redistribution.")
     parser.add_argument("--xml-name", default="DeepDict.xml")

@@ -6,7 +6,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .build_lesswrong_wordlist import (
+from build_lesswrong_wordlist import (
     cap_kind,
     capitalization_ratios,
     clean_chunk,
@@ -164,13 +164,13 @@ def parse_args():
     parser.add_argument("--years", default="2025,2024", help="Comma-separated years, for example 2025,2024.")
     parser.add_argument("--months", help="Comma-separated YYYY-MM shards, for example 2025-01,2025-04. Overrides --years.")
     parser.add_argument("--types", default="story,comment", help="Comma-separated HN item types.")
-    parser.add_argument("--known-words", type=Path, default=Path("data/generation-targets/oxford5000/words.csv"))
-    parser.add_argument("--known-phrases", type=Path, default=Path("outputs/wordlist-builds/oxford5000/phrases.csv"))
-    parser.add_argument("--known-wordforms", type=Path, default=Path("data/lemma-wordforms.csv"))
-    parser.add_argument("--ecdict", type=Path, default=Path("vendor/ecdict/ecdict.csv"))
-    parser.add_argument("--reference-words", type=Path, default=Path("data/ecdict-clean-words.csv"))
-    parser.add_argument("--output-dir", type=Path, default=Path("outputs/wordlist-builds/hacker-news"))
-    parser.add_argument("--targets", type=Path, default=Path("data/generation-targets/hacker-news/words.csv"))
+    parser.add_argument("--known-words", type=Path, default=Path("wordlists/oxford5000.csv"))
+    parser.add_argument("--known-phrases", type=Path, default=Path("work/wordlist-builds/oxford5000/phrases.csv"))
+    parser.add_argument("--known-wordforms", type=Path, default=Path("work/wordlist-builds/lemma-wordforms.csv"))
+    parser.add_argument("--ecdict", type=Path, default=Path("work/vendor/ecdict/ecdict.csv"))
+    parser.add_argument("--reference-words", type=Path, default=Path("work/wordlist-builds/ecdict-clean-words.csv"))
+    parser.add_argument("--output-dir", type=Path, default=Path("work/wordlist-builds/hacker-news"))
+    parser.add_argument("--targets", type=Path, default=Path("wordlists/hacker-news.csv"))
     parser.add_argument("--min-score", type=int, help="Optional score floor for story items only.")
     parser.add_argument("--min-ecdict-count", type=int, default=2)
     parser.add_argument("--min-ecdict-docs", type=int, default=2)

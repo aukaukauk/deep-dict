@@ -159,11 +159,11 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Extract clean Oxford 5000 core word tables.")
     parser.add_argument("--url", default=DEFAULT_URL)
     parser.add_argument("--html", type=Path, help="Use an already downloaded Oxford wordlist HTML file.")
-    parser.add_argument("--output-dir", type=Path, default=Path("outputs/wordlist-builds/oxford5000"))
-    parser.add_argument("--source-csv", type=Path, default=Path("outputs/wordlist-builds/oxford5000/source.csv"))
-    parser.add_argument("--targets-csv", type=Path, default=Path("data/generation-targets/oxford5000/words.csv"))
-    parser.add_argument("--phrases-csv", type=Path, default=Path("outputs/wordlist-builds/oxford5000/phrases.csv"))
-    parser.add_argument("--excluded-csv", type=Path, default=Path("outputs/wordlist-builds/oxford5000/excluded.csv"))
+    parser.add_argument("--output-dir", type=Path, default=Path("work/wordlist-builds/oxford5000"))
+    parser.add_argument("--source-csv", type=Path, default=Path("work/wordlist-builds/oxford5000/source.csv"))
+    parser.add_argument("--targets-csv", type=Path, default=Path("wordlists/oxford5000.csv"))
+    parser.add_argument("--phrases-csv", type=Path, default=Path("work/wordlist-builds/oxford5000/phrases.csv"))
+    parser.add_argument("--excluded-csv", type=Path, default=Path("work/wordlist-builds/oxford5000/excluded.csv"))
     return parser.parse_args()
 
 

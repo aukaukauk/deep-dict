@@ -72,12 +72,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--input",
-        default="vendor/ecdict/lemma.en.txt",
+        default="work/vendor/ecdict/lemma.en.txt",
         help="Path to ECDICT lemma.en.txt.",
     )
     parser.add_argument(
         "--output",
-        default="data/lemma-wordforms.csv",
+        default="work/wordlist-builds/lemma-wordforms.csv",
         help="Output CSV path.",
     )
     parser.add_argument(

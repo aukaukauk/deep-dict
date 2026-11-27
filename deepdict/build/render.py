@@ -91,7 +91,7 @@ def front_matter_xml(dict_name, entry_count):
     return f'''  <d:entry id="frontmatter" d:title="{escape(dict_name, quote=True)}">
     <d:index d:value="{escape(dict_name, quote=True)}"/>
     <h1>{escape(dict_name)}</h1>
-    <p>Generated English-Chinese concept dictionary.</p>
+    <p>英汉阅读词典，词条由 LLM 生成。</p>
     <p>Entries: {entry_count}</p>
   </d:entry>'''
 

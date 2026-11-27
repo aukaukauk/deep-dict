@@ -3,21 +3,8 @@
 .claude/
 __pycache__/
 *.py[cod]
+*.egg-info/
 
-# Generated dictionary packages and source bundles
-/build/
-
-# Generated entries, audits, run logs, and intermediate analysis outputs
-/outputs/
-
-# Large third-party source dumps
-vendor/ecdict/
-data/wiki/
-*.zim
-
-# Local editor configuration can stay in this repo because it keeps VS Code responsive here.
-!.vscode/
-!.vscode/settings.json
-
-# v2 pipeline working area: extracted entries, QA scans, run logs
+# Local working area: extracted entries, QA results, run logs, builds,
+# and third-party resources (ECDICT, Apple Dictionary Development Kit).
 /work/

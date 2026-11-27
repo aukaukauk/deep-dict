@@ -59,7 +59,7 @@ def parse_args():
     parser.add_argument("--wordlist", default="best")
     parser.add_argument("--ascii-only", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--include-contractions", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--known-words", type=Path, default=Path("data/generation-targets/oxford5000/words.csv"))
+    parser.add_argument("--known-words", type=Path, default=Path("wordlists/oxford5000.csv"))
     parser.add_argument("--output-dir", type=Path, help="Side-table output directory.")
     parser.add_argument("--targets", type=Path, help="Generation target CSV path.")
     return parser.parse_args()
@@ -68,8 +68,8 @@ def parse_args():
 def main():
     args = parse_args()
     suffix = f"wordfreq-r{args.limit}"
-    output_dir = args.output_dir or Path("outputs/wordlist-builds") / suffix
-    targets = args.targets or Path("data/generation-targets") / suffix / "words.csv"
+    output_dir = args.output_dir or Path("work/wordlist-builds") / suffix
+    targets = args.targets or Path("work/wordlist-builds") / suffix / "words.csv"
 
     known_words = load_word_column(args.known_words)
     accepted = []

@@ -31,7 +31,7 @@ from ..qa.lookalike import build_deletion_index, find_lookalikes
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--entries", type=Path, default=Path("work/entries"))
-    parser.add_argument("--ecdict", type=Path, default=Path("vendor/ecdict/ecdict.csv"))
+    parser.add_argument("--ecdict", type=Path, default=Path("work/vendor/ecdict/ecdict.csv"))
     parser.add_argument("--out", type=Path, default=Path("work/qa"))
     parser.add_argument("--vocab-size", type=int, default=30000,
                         help="High-frequency vocabulary size for lookalike candidates.")

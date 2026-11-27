@@ -11,7 +11,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .build_lesswrong_wordlist import (
+from build_lesswrong_wordlist import (
     cap_kind,
     capitalization_ratios,
     clean_chunk,
@@ -219,13 +219,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Build a cleaned Reddit Pushshift-derived generation word list.")
     parser.add_argument("--dataset", default="fddemarco/pushshift-reddit-comments")
     parser.add_argument("--months", default="2015-10,2015-11,2015-12")
-    parser.add_argument("--known-words", type=Path, default=Path("data/generation-targets/oxford5000/words.csv"))
-    parser.add_argument("--known-phrases", type=Path, default=Path("outputs/wordlist-builds/oxford5000/phrases.csv"))
-    parser.add_argument("--known-wordforms", type=Path, default=Path("data/lemma-wordforms.csv"))
-    parser.add_argument("--ecdict", type=Path, default=Path("vendor/ecdict/ecdict.csv"))
-    parser.add_argument("--reference-words", type=Path, default=Path("data/ecdict-clean-words.csv"))
-    parser.add_argument("--output-dir", type=Path, default=Path("outputs/wordlist-builds/reddit-comments"))
-    parser.add_argument("--targets", type=Path, default=Path("data/generation-targets/reddit-comments/words.csv"))
+    parser.add_argument("--known-words", type=Path, default=Path("wordlists/oxford5000.csv"))
+    parser.add_argument("--known-phrases", type=Path, default=Path("work/wordlist-builds/oxford5000/phrases.csv"))
+    parser.add_argument("--known-wordforms", type=Path, default=Path("work/wordlist-builds/lemma-wordforms.csv"))
+    parser.add_argument("--ecdict", type=Path, default=Path("work/vendor/ecdict/ecdict.csv"))
+    parser.add_argument("--reference-words", type=Path, default=Path("work/wordlist-builds/ecdict-clean-words.csv"))
+    parser.add_argument("--output-dir", type=Path, default=Path("work/wordlist-builds/reddit-comments"))
+    parser.add_argument("--targets", type=Path, default=Path("wordlists/reddit.csv"))
     parser.add_argument("--min-ecdict-count", type=int, default=5)
     parser.add_argument("--min-ecdict-docs", type=int, default=5)
     parser.add_argument("--min-non-ecdict-count", type=int, default=80)

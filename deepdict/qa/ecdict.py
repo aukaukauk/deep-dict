@@ -1,6 +1,6 @@
 """ECDICT cross-checking.
 
-ECDICT (vendor/ecdict/ecdict.csv, ~770k headwords with Chinese translations)
+ECDICT (work/vendor/ecdict/ecdict.csv, ~770k headwords with Chinese translations)
 is an independent evidence source for two signals:
 
 - existence: a rare word that ECDICT has never heard of is weak evidence the

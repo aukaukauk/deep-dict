@@ -164,10 +164,10 @@ def write_words(path, rows):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Lightly clean the top N rows from a wordfreq target table.")
-    parser.add_argument("--source", type=Path, default=Path("data/generation-targets/wordfreq-r100000/words.csv"))
+    parser.add_argument("--source", type=Path, default=Path("work/wordlist-builds/wordfreq-r100000/words.csv"))
     parser.add_argument("--top", type=int, default=10000)
-    parser.add_argument("--targets", type=Path, default=Path("data/generation-targets/wordfreq-top10000-clean/words.csv"))
-    parser.add_argument("--output-dir", type=Path, default=Path("outputs/wordlist-builds/wordfreq-top10000-clean"))
+    parser.add_argument("--targets", type=Path, default=Path("work/wordlist-builds/wordfreq-top10000-clean/words.csv"))
+    parser.add_argument("--output-dir", type=Path, default=Path("work/wordlist-builds/wordfreq-top10000-clean"))
     return parser.parse_args()
 
 

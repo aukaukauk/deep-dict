@@ -17,8 +17,8 @@ future decision; they do not enter words.csv.
 
 Two phases, resumable (raw downloads are cached under --raw-dir):
 
-  python3 -m deepdict.wordlists.build_cogsci_wordlist --fetch
-  python3 -m deepdict.wordlists.build_cogsci_wordlist --build
+  python3 wordlists/build/build_cogsci_wordlist.py --fetch
+  python3 wordlists/build/build_cogsci_wordlist.py --build
 """
 
 import argparse
@@ -453,9 +453,9 @@ def parse_args():
         default=[],
         help="Existing word CSVs to diff against. Defaults to the production candidate pool.",
     )
-    parser.add_argument("--ecdict", type=Path, default=Path("vendor/ecdict/ecdict.csv"))
-    parser.add_argument("--out-dir", type=Path, default=Path("data/generation-targets/cogsci-academic"))
-    parser.add_argument("--summary-dir", type=Path, default=Path("outputs/wordlist-builds/cogsci-academic"))
+    parser.add_argument("--ecdict", type=Path, default=Path("work/vendor/ecdict/ecdict.csv"))
+    parser.add_argument("--out-dir", type=Path, default=Path("wordlists/cogsci"))
+    parser.add_argument("--summary-dir", type=Path, default=Path("work/wordlist-builds/cogsci-academic"))
     return parser.parse_args()
 
 
@@ -470,7 +470,7 @@ def main():
         fetch_arxiv(args.raw_dir, per_category=args.arxiv_per_category)
         fetch_sep(args.raw_dir)
     if args.build:
-        pool_paths = args.pool or [Path("data/generation-targets/merged-clean/words.csv")]
+        pool_paths = args.pool or [Path("wordlists/merged.csv")]
         build(
             args.raw_dir,
             out_words=args.out_dir / "words.csv",
