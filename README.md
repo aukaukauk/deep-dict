@@ -1,73 +1,97 @@
 # DeepDict
 
-[English README](README.en.md)
+DeepDict 是一部给中文母语者读英文用的英汉词典。它的目标只有一个：读到不认识的词时，尽快在上下文里看懂，然后回去继续读。
 
-DeepDict 是一个面向 macOS Dictionary.app 与系统 Lookup 功能的英汉词典。它主要服务于需要长期阅读英语内容的中文母语者，目标是在尽量减少阅读中断的前提下，提供简洁、直接、易于快速理解的中文释义。
+词条由 LLM 批量生成。当前版本（V2）有 106,879 个候选词，其中 96,669 个进入词典，共 136,222 个义项。
 
-词条由 DeepSeek V4 Pro 批量生成。当前版本共生成 100,683 条候选词条，其中 91,813 条进入最终词典；整个生成过程约消耗 2.57 亿个 token。
+目前的成品是 macOS 词典包，用于 Dictionary.app 和系统的"查询"（Lookup）弹窗。
+
+## 它是什么样的词典
+
+DeepDict 是阅读辅助词典，不是学习词典，也不是百科全书。
+
+- **释义以解释为主。** 只给一串近义翻译（如 serious＝严重的；严肃的；认真的）等于把辨义留给读者。V2 中 97% 的义项带一句话解释，说明这个词在这个意思下到底指什么。
+- **义项按真实阅读频率排序和裁剪。** 平均每个词 1.4 个义项，罕见义项通常不收。
+- **不收例句、音标、词源、搭配和用法说明。** 这些对"读懂当前这句"没有帮助，只会增加弹窗长度。
+- **不系统收录专有名词。** 人物、机构、品牌、产品、事件更适合查百科。
+
+<img src="assets/sample-token.png" alt="DeepDict Lookup 示例：token" width="520">
 
 ## 安装
 
-解压 `release/DeepDict.dictionary.zip`，然后将 `DeepDict.dictionary` 复制到：
+`release/` 目录里是 V1 的安装包（2026 年 4 月，91,813 词）。解压 `release/DeepDict.dictionary.zip`，把 `DeepDict.dictionary` 复制到：
 
 ```sh
 ~/Library/Dictionaries/
 ```
 
-之后打开 Dictionary.app，并在设置中启用 `DeepDict`。
+然后打开 Dictionary.app，在设置里启用 `DeepDict`。
 
-## 项目定位
-
-DeepDict 是阅读辅助型词典，不是百科全书，也不是完整的英语学习词典。它适合在阅读英文文章、论文、论坛和技术文档时快速确认词义，并在 macOS Lookup 弹窗中展示短而清晰的中文释义。
-
-它不试图覆盖完整词源、音标、例句、搭配、语法说明，也不系统收录人物、机构、品牌、产品、事件等百科条目。
-
-## 样例
-
-<img src="assets/sample-token.png" alt="DeepDict Lookup 示例：token" width="520">
+V2 还没有打包发布，目前需要按下面的"构建"一节从源码生成。
 
 ## 词库来源
 
-候选词表由基础频率词表与公开语料补充构成。项目首先通过 word frequency 数据提取约 10 万个英语候选词，并清理其中明显不适合作为词典词条的项目；随后从 LessWrong、Hacker News 近两年内容，以及 Reddit 评论语料中抽取词汇，用来补充论坛、技术社区和现代日常讨论中更常见的表达；此外还保留了一个较小的核心英语词表，用于覆盖基础阅读词汇。
+候选词表由以下来源合并去重得到，详见 [docs/wordlists.md](docs/wordlists.md)：
 
-这些来源的目标不是穷尽英语词汇，而是覆盖真实阅读环境中更可能遇到、且具有查词价值的词。
+- **词频表**：从 wordfreq 取约 10 万个高频英语词并清理。
+- **社区语料**：LessWrong、Hacker News、Reddit 评论，补充论坛和技术社区里的常见表达。
+- **核心词表**：Oxford 5000，保证基础阅读词汇的覆盖。
+- **学术词表**（V2 新增）：认知科学及相关学科（神经科学、心理学、AI、哲学、语言学、统计）的术语，来自 Wikipedia 术语表、Wiktionary 学科分类、arXiv 摘要和斯坦福哲学百科。
 
-## 收录标准
+模型在生成时判断每个词是否收录。明显的拼写错误、碎片、缩写、无法可靠识别的词会被排除，但排除记录会保留，便于审计。
 
-本词典并非百科全书，因此许多专有名词、品牌、产品、人名、公司名和事件名不会被收录。例如，`DeepSeek` 这类词并不一定会作为普通词条进入主词典，它们更适合由百科词典、Wikipedia、技术术语表或独立的专有名词词典处理。
+## 质量
 
-收录时主要考虑：该词是否会影响普通英文阅读理解；模型是否能够可靠识别 exact 输入词；是否能够生成简洁、准确、适合中文读者快速理解的释义；该释义是否适合在 macOS Lookup 弹窗中展示。
+词条是 LLM 生成的，不应当作权威词典数据使用。已经做过的质量工作：
 
-常见、通用、对理解文本最有帮助的义项会优先出现；罕见义项通常不会被完整收录。
+- **规则扫描**（不消耗 token）：检测"把生词看成形近的常见词"这类误读，并与 ECDICT 交叉核对，给每个词条分风险层。
+- **双模型审查**：风险最高的 647 条先由 DeepSeek 审查，被判有问题的 274 条再由 GPT 复审。
+- **人工修正**：两个模型一致判为有问题的 66 条已逐条复核，修正 12 条，排除 7 条，记录在 `data/corrections/`。
 
-## 复现与构建
+还没做的：人工金标样本评估（样本已抽好，未标注），以及中低风险层的审查。详见 [docs/pipeline.md](docs/pipeline.md)。
 
-安装依赖并生成词条：
+## 构建
+
+需要 Python 3.9 以上、`zstd`，以及 Apple 的 Dictionary Development Kit（在 Xcode 的 Additional Tools 里）。
 
 ```sh
 python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-export DEEPSEEK_API_KEY="..."
-python scripts/generate_entries.py --workers 64
 ```
-
-构建 macOS 词典需要 Apple Dictionary Development Kit：
 
 ```sh
-python scripts/build_apple_dictionary_source.py --entries-dir outputs/entries-merged-clean --output-dir build/deep-dict --dict-name "DeepDict" --package-name DeepDict --display-name "DeepDict" --bundle-id org.deepdict.dictionary.en-zh --manufacturer "DeepDict Project" --xml-name DeepDict.xml --clean
-make -C build/deep-dict DICT_BUILD_TOOL_DIR="/path/to/Dictionary Development Kit"
-make -C build/deep-dict install
+.venv/bin/pip install -e .
 ```
+
+解出词条：
+
+```sh
+mkdir -p work && zstd -dc data/entries/deepdict-v2-entries.tar.zst | tar -xf - -C work
+```
+
+生成词典源文件：
+
+```sh
+.venv/bin/python -m deepdict.cli.build_apple --entries-dir work/entries --output-dir build/deep-dict-v2 --dict-name "DeepDict V2" --package-name DeepDictV2 --display-name "DeepDict V2" --bundle-id org.deepdict.dictionary.v2 --clean
+```
+
+编译并安装：
+
+```sh
+make -C build/deep-dict-v2 DICT_BUILD_TOOL_DIR="/path/to/Dictionary Development Kit" all install
+```
+
+重新生成词条、运行 QA 的方法见 [docs/pipeline.md](docs/pipeline.md)。
 
 ## 仓库结构
 
-- `prompts/entry-generation-system.md`：词条生成提示词。
-- `scripts/`：词表提取、词条生成和 Apple Dictionary 构建脚本。
-- `data/generation-targets/merged-clean/words.csv`：当前生产候选词表。
-- `data/final-wordlists/included-words.csv`：最终收录词表。
-- `release/`：当前发布产物。
+- `deepdict/`：全部代码。`wordlists/` 构建候选词表，`cli/` 是生成、清洗、QA、验证、构建各步骤的入口，`prompts/` 是提示词。
+- `data/generation-targets/`：各来源的候选词表。
+- `data/entries/deepdict-v2-entries.tar.zst`：V2 全部词条（含被排除的记录）。
+- `data/final-wordlists/included-words.csv`：V2 最终收录的词。
+- `data/corrections/`：人工修正记录。
+- `release/`：V1 的发布产物。
+- `docs/`：流水线和词表来源的说明。
 
 ## 开源说明
 
-词条由 LLM 生成，不应被视为权威专业词典数据。正式开源发布前，仍需要明确代码、生成数据和 release artifact 的 license。
+正式发布前，还需要明确代码、生成数据和发布产物各自的许可证，并核对第三方词表来源的再分发限制。

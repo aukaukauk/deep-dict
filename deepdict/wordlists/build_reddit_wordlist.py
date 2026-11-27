@@ -11,7 +11,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from build_lesswrong_wordlist import (
+from .build_lesswrong_wordlist import (
     cap_kind,
     capitalization_ratios,
     clean_chunk,

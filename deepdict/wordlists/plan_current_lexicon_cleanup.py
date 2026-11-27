@@ -5,7 +5,7 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from filter_ecdict_main_words import SHORT_ALLOWLIST, reject_reason
+from .filter_ecdict_main_words import SHORT_ALLOWLIST, reject_reason
 
 
 DIRTY_REASONS = {

@@ -5,7 +5,7 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from filter_ecdict_main_words import SHORT_ALLOWLIST
+from .filter_ecdict_main_words import SHORT_ALLOWLIST
 
 
 def load_words(path):

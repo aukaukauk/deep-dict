@@ -6,16 +6,17 @@
     "**/build": true,
     "**/outputs": true,
     "**/.venv": true,
-    "**/vendor/ecdict": true
+    "**/vendor/ecdict": true,
+    "**/work": true
   },
   "files.watcherExclude": {
     "**/build/**": true,
     "**/outputs/**": true,
     "**/.venv/**": true,
-    "**/vendor/ecdict/**": true
+    "**/vendor/ecdict/**": true,
+    "**/work/**": true
   },
   "files.exclude": {
-    "**/outputs/entries": true,
-    "**/outputs/entries-oxford5000": true
+    "**/work/entries": true
   }
 }

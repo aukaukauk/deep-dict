@@ -5,10 +5,10 @@ __pycache__/
 *.py[cod]
 
 # Generated dictionary packages and source bundles
-build/
+/build/
 
 # Generated entries, audits, run logs, and intermediate analysis outputs
-outputs/
+/outputs/
 
 # Large third-party source dumps
 vendor/ecdict/
@@ -18,3 +18,6 @@ data/wiki/
 # Local editor configuration can stay in this repo because it keeps VS Code responsive here.
 !.vscode/
 !.vscode/settings.json
+
+# v2 pipeline working area: extracted entries, QA scans, run logs
+/work/

@@ -5,7 +5,8 @@ import re
 from collections import Counter
 from pathlib import Path
 
-from generate_entries import validate_entry, write_json_atomic
+from ..entries import write_json_atomic
+from ..schema import validate_entry
 
 
 TRAILING_PAREN_RE = re.compile(r"^(.+?)（([^（）]+)）$")
@@ -152,13 +153,13 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Clean generated dictionary entry JSON files without calling a model."
     )
-    parser.add_argument("--input-dir", type=Path, default=Path("outputs/entries"))
+    parser.add_argument("--input-dir", type=Path, default=Path("work/entries"))
     parser.add_argument(
         "--output-dir",
         type=Path,
         help="Write cleaned JSON files here. If omitted, no entry files are written.",
     )
-    parser.add_argument("--report", type=Path, default=Path("outputs/cleaning-report.json"))
+    parser.add_argument("--report", type=Path, default=Path("work/cleaning-report.json"))
     parser.add_argument(
         "--dedupe",
         choices=["none", "exact", "gloss", "plain-gloss"],
