@@ -94,13 +94,29 @@ A 层是有两个以上强信号的，B 层有一个，C 层只是模型自评�
 
 逐条复核高置信的问题词条，直接改 `work/entries/` 里的 JSON，并把改后的词条追加到 `dictionary/corrections.jsonl`。
 
-### 5. 抽样评估（还没做）
+### 5. 准确性抽查
+
+分层抽样：
 
 ```sh
-.venv/bin/python -m deepdict.cli.gold_sample
+.venv/bin/python -m deepdict.cli.accuracy sample --size 800
 ```
 
-按风险层和词频分层抽样，输出 `work/qa/gold-sample.csv`。人工在 `label` 列填 ok、wrong_word、fabricated、wrong_senses 或 partly_wrong，之后可以算出词典的错误率。
+样本写在 `work/accuracy/sample.csv`。接下来为每个词取参照词典的释义，按 `prompts/accuracy-judge.md` 的标准逐条判定，判定结果放进 `work/accuracy/verdicts/`。取参照释义的脚本和参照原文都不在仓库里。
+
+汇总成逐词结果：
+
+```sh
+.venv/bin/python -m deepdict.cli.accuracy collect
+```
+
+输出加权后的估计和置信区间：
+
+```sh
+.venv/bin/python -m deepdict.cli.accuracy report
+```
+
+`report` 只读 `dictionary/accuracy.csv`，所以拿到仓库就能重算这些数字。
 
 ### 6. 打包
 
