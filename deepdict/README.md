@@ -90,9 +90,9 @@ A 层是有两个以上强信号的，B 层有一个，C 层只是模型自评�
 
 两个模型都判有问题的才算高置信，只有一个判的留给人工复核。用两个不同的模型，是因为它们犯的错相互独立。
 
-### 4. 人工修正
+### 4. 修正
 
-逐条复核高置信的问题词条，直接改 `work/entries/` 里的 JSON，并把改后的词条追加到 `dictionary/corrections.jsonl`。
+逐条复核被标出的问题词条，直接改 `work/entries/` 里的 JSON，并把改后的词条追加到 `dictionary/corrections.jsonl`。
 
 ### 5. 准确性抽查
 
