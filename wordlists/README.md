@@ -15,8 +15,31 @@
 | `reddit.csv` | 1,740 | Reddit 评论 | `build_reddit_wordlist.py` |
 | `merged.csv` | 100,683 | 以上五个合并去重 | `merge_generation_targets.py` |
 | `cogsci/words.csv` | 6,196 | 认知科学及相关学科的术语 | `build_cogsci_wordlist.py` |
+| `ecdict-tagged.csv` | 708 | ECDICT 里带考试或学习词表标注、而上面没有的词 | `build_expansion_candidates.py` |
+| `contractions.csv` | 774 | wordfreq 里带撇号的缩约形式，如 it's、o'clock | `build_expansion_candidates.py` |
+| `wordfreq-rest.csv` | 187,276 | wordfreq 里其余全部纯字母词，按词频从高到低 | `build_expansion_candidates.py` |
+| `new-words.csv` | 2,821 | 近几年的新词，由几个大模型分领域列出 | 没有脚本，提示词见 `build/new-words-prompt.md` |
 
-送去生成的是 `merged.csv` 和 `cogsci/words.csv`，合计 106,879 个词。
+送去生成的是 `merged.csv`、`cogsci/words.csv` 和后四个扩充词表，合计 298,458 个词。
+
+## 两个阶段
+
+**最初的 106,879 个词**（`merged.csv` 和 `cogsci/words.csv`）是先筛后生成的：按词频截取前 10 万，再用规则去掉缩写、专有名词和噪声。
+
+**2026 年 11 月扩充的 188,758 个词**（`ecdict-tagged.csv`、`contractions.csv`、`wordfreq-rest.csv`）不再预先筛选。wordfreq 的 32 万词条里，只有机械规则能判定的才去掉：含数字或符号的、带非 ASCII 字母的、所有格形式。其余的全部送去生成，由模型判断是否收录。原因是预先筛选会误伤，最初那批里就有 romantic、purple、burden 这样的常用词被筛掉。
+
+扩充之后，wordfreq 的全部纯字母词都经过了模型判断，没有再按词频截断。
+
+**近几年的新词**（`new-words.csv`）是另一种来源。wordfreq 的数据止于 2021 年前后，之后出现的词它都没有，例如 chatgpt、mpox、shrinkflation。这批候选不是从语料里统计出来的，而是让几个大模型按 15 个领域回忆、列出新词，合并去重后得到的：
+
+| 来源 | 列出的候选数 |
+| --- | --- |
+| 一个未记名的模型 | 2,086 |
+| Claude | 744 |
+| Gemini | 678 |
+| DeepSeek | 102 |
+
+其中 765 个词被两个以上的来源列出，所以各行相加超过 2,821。每个词由谁列出记在 `new-words-sources.csv` 里。提示词、处理步骤和这种做法的不足，见 `build/new-words-prompt.md`。
 
 ## 合并
 
@@ -75,7 +98,7 @@
 
 需要说明的几点：
 
-- **能直接重跑的只有两个。** `merge_generation_targets.py` 和 `build_cogsci_wordlist.py --build` 在当前仓库里重跑过，输出与这里的文件完全一致。
+- **能直接重跑的有三个。** `merge_generation_targets.py` 和 `build_cogsci_wordlist.py --build` 在当前仓库里重跑过，输出与这里的文件完全一致。`build_expansion_candidates.py` 需要 wordfreq 包和 ECDICT；它只列出词典里还没有记录的词，所以在扩充完成后的仓库里重跑会得到空表。
 - **其余脚本没有重新跑过。** 它们需要的原始语料不在仓库里（如 LessWrong 的全站导出），搬到这个目录时只改了默认路径。上面"提取方法"是按代码逻辑写的，表里没有列出当时实际使用的参数。
 - **三个辅助脚本**为社区语料脚本准备输入：`extract_ecdict_wordforms.py` 和 `extract_lemma_wordforms.py` 生成词形表，`filter_ecdict_main_words.py` 生成清洗过的 ECDICT 词表。
 - `dedupe_generation_targets.py` 按优先级在各来源之间去重，会直接改写词表文件，运行前先加 `--dry-run`。
