@@ -10,14 +10,24 @@ only from the batch file plus your own knowledge of English.
 - It is a reading aid: for each word it lists the few senses a reader is most
   likely to meet, each with a short Chinese gloss (`gloss_zh`) and usually a
   one-sentence Chinese explanation (`explanation_zh`).
-- It deliberately omits rare senses, examples, etymology. **Omitting a rare or
-  secondary sense is not a defect.**
+- It deliberately lists only a few senses and omits examples and etymology.
+  **A missing sense is never a defect, even when the missing sense is the one a
+  reader would meet most often.** Judge only what the entry states.
 - Inflected forms (plurals, past tenses, -ing forms) are separate entries and are
   explained as that form. That is by design.
 - It also contains some proper names, brand names, foreign words and internet
   slang. Glossing a name as a name is fine.
 - Senses from modern or technical usage that learner dictionaries do not list are
   fine if they are real.
+- **Proper names are glossed by category only**: the gloss is 人名, 地名, 机构名,
+  品牌名, 作品名 or 角色名, with no transliteration. An explanation is optional and,
+  when present, starts with 可指 and names one or more common referents. A bare
+  category with no explanation is acceptable. Judge whether the word really is
+  used as that kind of name and whether any referent stated is real and
+  correctly described. Do not downgrade for a neighbouring category (a fictional
+  character labelled 人名, a company labelled 品牌名).
+- Offensive words are defined plainly with a register label such as 粗俗 or 蔑称.
+  That is by design; judge only whether the meaning and label are accurate.
 
 ## The references
 
@@ -31,12 +41,10 @@ shown may be for its base form (see `headword`); judge the meaning accordingly.
 Give each word exactly one `verdict`:
 
 - `correct` — the word is correctly identified, every listed sense is a real
-  sense of this word, the Chinese gloss and explanation are accurate, and the
-  sense a reader most commonly meets is present.
+  sense of this word, and the Chinese gloss and explanation are accurate.
 - `minor` — the main meaning is right, but something is off: a gloss that is
-  imprecise, too narrow or too broad; a wrong part of speech; a misleading label;
-  a doubtful secondary sense; or the clearly dominant sense is missing although
-  the listed senses are real.
+  imprecise, too narrow or too broad for the sense it describes; a wrong part
+  of speech; a misleading label; or a doubtful secondary sense.
 - `wrong` — a reader would be misled: the word is misidentified (for example
   confused with a similar-looking word), or the primary sense is wrong, or a
   listed sense is invented or contradicted by the references.
@@ -44,7 +52,7 @@ Give each word exactly one `verdict`:
   or refute the entry from your own knowledge with confidence.
 
 Be strict but fair. Do not downgrade an entry for style, for brevity, or for
-omitting senses that are rare. Do downgrade it when a Chinese gloss would give
+omitting senses. Do downgrade it when a Chinese gloss would give
 the reader the wrong idea. If the references are null, judge from your own
 knowledge; if you are not confident, use `unverifiable` rather than guessing.
 
@@ -63,7 +71,7 @@ Write a JSON array, one object per word, in the same order as the batch:
 ```
 
 - `ref_coverage`: `found` (a reference covers this word or its base form),
-  or `none` (all three references are null).
+  or `none` (all references are null).
 - `basis`: `reference` if the references were enough to decide, `own_knowledge`
   if you had to rely on what you know (always the case when `ref_coverage` is
   `none`, and also when the entry's senses go beyond what the references list).

@@ -44,14 +44,20 @@ python3 -m venv .venv
 ### 1. 生成词条
 
 ```sh
-.venv/bin/python -m deepdict.cli.generate_entries_batch --words wordlists/merged.csv
+.venv/bin/python -m deepdict.cli.generate_entries_batch --words wordlists/merged.csv --slim
 ```
 
-- 一次调用生成一批词，默认 50 个，多批并发。
+- 一次调用生成一批词，默认 50 个，多批并发。批量不要调大：试过一批 200 个，一次调用丢了 199 个词条。
 - 已有输出文件的词会跳过，中断后重跑同一条命令就是续跑。
-- `--backend codex` 走 Codex 订阅，`--backend api` 走兼容 OpenAI 的 HTTP 接口（默认 DeepSeek，需要 `DEEPSEEK_API_KEY`）。
+- `--backend codex` 走 Codex 订阅，默认模型 `gpt-6.2-astra`，推理强度 `high`。`--backend api` 走兼容 OpenAI 的 HTTP 接口（默认 DeepSeek，需要 `DEEPSEEK_API_KEY`）。
+- `--slim` 用词典提示词替换 Codex 自带的编程助手指令，并关掉用不到的功能、联网搜索和用户在 Codex 里配置的 MCP 服务。Codex 每次调用自带约 2.4 万 token 的固定输入，加上这个参数后降到约 1.3 万。
+- `--web-search` 和 `--slim` 一起用时允许模型联网搜索。只适合用在比模型训练数据更新的词上：每个词的输入量是不联网时的几十倍，而对普通词没有可见的质量提升。
+- 并发数用 `--workers` 指定。不加 `--slim` 时每次调用都会启动用户配置的全部 MCP 服务，并发高了很占内存：128 路时这些服务占了约 16 GB，比 Codex 本身还多。
+- 大约每几百批会有一批只返回一两个词，原因没有查明。缺的词没有输出文件，重跑同一条命令就会补上。
 - 连续 3 批失败会自动停止，通常是额度用完了。
 - 失败的词放在 `work/entries-failures/`，不阻塞其他词。
+- 每条词条写入时带上 `meta`：模型、推理强度、提示词版本、日期。
+- 每次运行的用时和 token 用量记在 `work/runs/entries/` 下的汇总文件里。
 
 提示词是 `prompts/entry-generation-system.md`。
 
@@ -61,7 +67,7 @@ python3 -m venv .venv
 .venv/bin/python -m deepdict.cli.qa_scan
 ```
 
-不消耗 token，约 20 秒。对每个收录的词条计算四种信号：
+不消耗 token，25 万个词约需 4 分钟。对每个收录的词条计算四种信号：
 
 | 信号 | 含义 |
 | --- | --- |
@@ -92,7 +98,7 @@ A 层是有两个以上强信号的，B 层有一个，C 层只是模型自评�
 
 ### 4. 修正
 
-逐条复核被标出的问题词条，直接改 `work/entries/` 里的 JSON，并把改后的词条追加到 `dictionary/corrections.jsonl`。
+逐条复核被标出的问题词条，直接改 `work/entries/` 里的 JSON，在 `meta` 里补上 `edited`（日期）和 `edited_by`（修正者）。`dictionary/corrections.jsonl` 列出当前所有带 `edited` 标记的词条。
 
 ### 5. 准确性抽查
 

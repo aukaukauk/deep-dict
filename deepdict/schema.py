@@ -65,9 +65,28 @@ def validate_score(data, key):
     return value
 
 
+META_KEYS = ("model", "effort", "prompt", "generated", "edited", "edited_by")
+
+
+def validate_meta(data):
+    """meta records how an entry was produced. Optional; string values only."""
+    meta = data.get("meta")
+    if meta is None:
+        return {}
+    if not isinstance(meta, dict):
+        raise ValueError("meta must be an object")
+    for key, value in meta.items():
+        if key not in META_KEYS:
+            raise ValueError(f"unexpected meta key: {key!r}")
+        if not isinstance(value, str) or not value:
+            raise ValueError(f"meta.{key} must be a non-empty string")
+    return {"meta": {key: meta[key] for key in META_KEYS if key in meta}}
+
+
 def validate_entry(data, expected_word, protected_words=frozenset()):
     if not isinstance(data, dict):
         raise ValueError("entry must be a JSON object")
+    meta = validate_meta(data)
     if data.get("word") != expected_word:
         raise ValueError(f"word mismatch: expected {expected_word!r}, got {data.get('word')!r}")
     include = data.get("include")
@@ -88,6 +107,7 @@ def validate_entry(data, expected_word, protected_words=frozenset()):
         "meaning_confidence",
         "exclude_reason",
         "senses",
+        "meta",
     }
     extra_entry_keys = set(data) - allowed_entry_keys
     if extra_entry_keys:
@@ -114,6 +134,7 @@ def validate_entry(data, expected_word, protected_words=frozenset()):
             "meaning_confidence": meaning_confidence,
             "exclude_reason": exclude_reason,
             "senses": [],
+            **meta,
         }
 
     required_sense_keys = {"pos", "context_label", "gloss_zh"}
@@ -167,4 +188,5 @@ def validate_entry(data, expected_word, protected_words=frozenset()):
             ))
             for sense in senses
         ],
+        **meta,
     }

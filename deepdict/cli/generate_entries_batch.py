@@ -22,6 +22,7 @@ Usage:
 """
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -60,10 +61,27 @@ def parse_array(text):
         raw = raw.strip()
     data = json.loads(raw)
     if isinstance(data, dict):
-        data = [data]
+        # Some models wrap the array, e.g. {"entries": [...]}.
+        lists = [v for v in data.values() if isinstance(v, list)]
+        data = lists[0] if len(lists) == 1 and "word" not in data else [data]
     if not isinstance(data, list):
         raise ValueError("model output is not a JSON array")
     return data
+
+
+class UnparseableOutput(ValueError):
+    """The model answered, but not with the JSON array that was asked for
+    (for example a refusal in prose). Carries the raw text for the record."""
+
+    def __init__(self, text, usage):
+        super().__init__("model output is not a JSON array")
+        self.text = text
+        self.usage = usage
+
+
+def prompt_id(path):
+    """Short content hash that identifies a prompt version."""
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()[:8]
 
 
 def parse_reset_seconds(text):
@@ -92,14 +110,58 @@ def parse_reset_seconds(text):
     return None
 
 
-def codex_generate(prompt, reasoning, model, timeout):
+# Codex features that add tool definitions or instructions to every call but
+# are useless for a pure text task. Turning them off, and replacing Codex's
+# own coding-agent instructions with the dictionary prompt, cuts the fixed
+# per-call input by more than half.
+SLIM_DISABLE = [
+    "apps", "browser_use", "browser_use_external", "computer_use", "plugins",
+    "view_image", "sleep_tool", "shell_tool", "image_generation",
+]
+USAGE_KEYS = ["input_tokens", "cached_input_tokens", "output_tokens", "reasoning_output_tokens"]
+
+
+def configured_mcp_servers():
+    """Names of the MCP servers in the user's Codex config.
+
+    Every `codex exec` starts all of them, so a run with many workers carries
+    that many copies of each server for nothing: the generator uses no tools."""
+    try:
+        text = (Path.home() / ".codex" / "config.toml").read_text(encoding="utf-8")
+    except OSError:
+        return []
+    names = re.findall(r'^\[mcp_servers\.("[^"]+"|[A-Za-z0-9_-]+)\]', text, re.M)
+    return sorted({name.strip('"') for name in names})
+
+
+MCP_SERVERS = configured_mcp_servers()
+
+
+def codex_generate(prompt, reasoning, model, timeout, instructions_file=None, web_search=False):
+    """Run one `codex exec` call. Returns (final message text, token usage).
+
+    With instructions_file, the file replaces Codex's built-in instructions
+    (so it acts as the system prompt) and unneeded features are disabled.
+    """
     with tempfile.NamedTemporaryFile("r", suffix=".txt", delete=False) as f:
         out_path = Path(f.name)
     cmd = [
-        "codex", "exec", "--ephemeral", "-s", "read-only", "--skip-git-repo-check",
+        "codex", "exec", "--ephemeral", "-s", "read-only", "--skip-git-repo-check", "--json",
         "-c", f'model_reasoning_effort="{reasoning}"',
         "-o", str(out_path),
     ]
+    if instructions_file:
+        cmd += ["-c", f'model_instructions_file="{Path(instructions_file).resolve()}"']
+        # Without Codex's own instructions the model starts verifying words by
+        # web search, which multiplies the input tokens of a call. Leave it on
+        # only when asked: it is worth the cost for words newer than the model.
+        if not web_search:
+            cmd += ["-c", 'web_search="disabled"']
+        for feature in SLIM_DISABLE:
+            cmd += ["--disable", feature]
+        for name in MCP_SERVERS:
+            key = name if re.fullmatch(r"[A-Za-z0-9_-]+", name) else f'"{name}"'
+            cmd += ["-c", f"mcp_servers.{key}.enabled=false"]
     if model:
         cmd += ["-m", model]
     cmd += ["-"]
@@ -107,10 +169,40 @@ def codex_generate(prompt, reasoning, model, timeout):
         proc = subprocess.run(
             cmd, input=prompt, text=True, capture_output=True, timeout=timeout
         )
+        usage = dict.fromkeys(USAGE_KEYS, 0)
+        messages = []
+        for line in proc.stdout.splitlines():
+            try:
+                event = json.loads(line)
+            except ValueError:
+                continue
+            if event.get("type") == "turn.completed":
+                for key in USAGE_KEYS:
+                    usage[key] += int((event.get("usage") or {}).get(key) or 0)
+            item = event.get("item") or {}
+            if event.get("type") == "item.completed" and item.get("type") == "agent_message":
+                messages.append(item.get("text") or "")
         text = out_path.read_text(encoding="utf-8") if out_path.exists() else ""
+        # `-o` holds only the last message, and the model does not always put
+        # the whole answer there: it may send the array and then a closing
+        # remark, or send the entries as several messages. Gather the entries
+        # from everything it said and keep whichever reading yields the most.
+        text = max(messages + [text], key=len)
+        gathered = []
+        for message in messages:
+            try:
+                gathered += [e for e in parse_array(message) if isinstance(e, dict) and "word" in e]
+            except ValueError:
+                continue
+        try:
+            best = len(parse_array(text))
+        except ValueError:
+            best = 0
+        if len(gathered) > best:
+            text = json.dumps(gathered, ensure_ascii=False)
         if not text.strip():
             raise ValueError(f"codex returned empty output (exit {proc.returncode}): {proc.stderr[-300:]}")
-        return text
+        return text, usage
     finally:
         out_path.unlink(missing_ok=True)
 
@@ -126,8 +218,14 @@ def parse_args():
     parser.add_argument("--backend", choices=["codex", "api"], default="codex")
     parser.add_argument("--batch-size", type=int, default=50)
     parser.add_argument("--workers", type=int, default=5)
-    parser.add_argument("--reasoning", default="low", help="codex reasoning effort (low/medium/high).")
-    parser.add_argument("--model", default=None, help="Override model (codex -m or API model).")
+    parser.add_argument("--reasoning", default="high", help="codex reasoning effort (low/medium/high/max).")
+    parser.add_argument("--model", default=None,
+                        help="Model name. Defaults to gpt-6.2-astra for codex; the API backend uses its own default.")
+    parser.add_argument("--slim", action="store_true",
+                        help="codex only: use the prompt file as Codex's instructions and disable "
+                             "unneeded features, which cuts the fixed input tokens of every call.")
+    parser.add_argument("--web-search", action="store_true",
+                        help="With --slim, let the model search the web (for words newer than the model).")
     parser.add_argument("--timeout", type=float, default=600)
     parser.add_argument("--abort-after-consecutive-batch-errors", type=int, default=3,
                         help="Circuit breaker: stop the run after this many consecutive batch-level "
@@ -157,6 +255,15 @@ def main():
 
     batches = [todo[i : i + args.batch_size] for i in range(0, len(todo), args.batch_size)]
     system_prompt = args.prompt.read_text(encoding="utf-8").strip()
+    if args.backend == "codex" and not args.model:
+        args.model = "gpt-6.2-astra"  # named explicitly so every entry records what wrote it
+    meta = {
+        "model": args.model or "deepseek-v4-pro",
+        "prompt": prompt_id(args.prompt),
+        "generated": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+    }
+    if args.backend == "codex":
+        meta["effort"] = args.reasoning
 
     print(f"backend={args.backend} reasoning={args.reasoning} batch_size={args.batch_size} workers={args.workers}")
     print(f"total_words={len(all_words)} todo={len(todo)} batches={len(batches)}")
@@ -177,9 +284,15 @@ def main():
         client = ChatClient.from_env(**kwargs)
 
     def run_batch(words):
-        prompt = build_batch_prompt(system_prompt, words)
+        usage = {}
         if args.backend == "codex":
-            text = codex_generate(prompt, args.reasoning, args.model, args.timeout)
+            if args.slim:
+                prompt = build_batch_prompt("", words).split("---\n\n", 1)[1]
+                text, usage = codex_generate(prompt, args.reasoning, args.model, args.timeout,
+                                             instructions_file=args.prompt, web_search=args.web_search)
+            else:
+                prompt = build_batch_prompt(system_prompt, words)
+                text, usage = codex_generate(prompt, args.reasoning, args.model, args.timeout)
         else:
             # api backend sends system + a thin user instruction
             def call():
@@ -188,18 +301,44 @@ def main():
                 data, _ = client.chat_json(system_prompt, user)
                 return json.dumps(data)
             text, _ = with_retries(call, retries=1)
-        return parse_array(text)
+        try:
+            return parse_array(text), usage
+        except ValueError:
+            raise UnparseableOutput(text, usage)
+
+    def generate(words):
+        """Run a batch; if the answer cannot be parsed, split the batch in two
+        and retry, so that one word the model will not handle does not take
+        the other words down with it. Returns (entries, usage, unparseable)
+        where unparseable maps a single word to the raw answer it produced."""
+        try:
+            entries, usage = run_batch(words)
+            return entries, dict(usage), {}
+        except UnparseableOutput as exc:
+            if len(words) == 1:
+                return [], dict(exc.usage), {words[0]: exc.text}
+            mid = len(words) // 2
+            entries, usage, unparseable = [], dict(exc.usage), {}
+            for part in (words[:mid], words[mid:]):
+                part_entries, part_usage, part_bad = generate(part)
+                entries += part_entries
+                unparseable.update(part_bad)
+                for key, value in part_usage.items():
+                    usage[key] = usage.get(key, 0) + value
+            return entries, usage, unparseable
 
     throttled = threading.Event()
     reset_hint = {"seconds": None}
 
     def process_batch(words):
-        result = {"ok": 0, "excluded": 0, "failed": 0, "batch_error": 0, "skipped": 0}
+        result = {"ok": 0, "excluded": 0, "failed": 0, "declined": 0, "unparseable": 0,
+                  "batch_error": 0, "skipped": 0, "flagged": []}
         if throttled.is_set():
             result["skipped"] = len(words)
             return result, None
         try:
-            entries = run_batch(words)
+            entries, usage, unparseable = generate(words)
+            result["usage"] = usage
         except Exception as exc:
             # Whole-batch failure (likely rate-limit/quota/network). Do NOT stash to
             # failures — the words have no output file, so they retry on resume.
@@ -211,19 +350,51 @@ def main():
             return result, f"BATCH ERROR ({len(words)}w): {str(exc)[:90]}"
 
         by_word = {}
+        by_letters = {}
         for e in entries:
             if isinstance(e, dict) and isinstance(e.get("word"), str):
                 by_word[e["word"].lower()] = e
+                by_letters.setdefault(re.sub(r"[^a-z0-9]", "", e["word"].lower()), e)
 
+        if len(by_word) < len(words) / 2 and not unparseable:
+            # Most of the batch is missing. Keep the model's answer so the cause can be found.
+            note = failures_dir / f"_short-batch-{stable_id(words[0])}.json"
+            write_json_atomic(note, {"words": words, "returned": len(by_word),
+                                     "raw_entries": entries[:5] if isinstance(entries, list) else str(entries)[:2000]})
         for w in words:
+            if w in unparseable:
+                # The model answered this single word with something other than
+                # an entry. Keep what it said so the case can be looked at.
+                write_json_atomic(failures_dir / f"{stable_id(w)}.json",
+                                  {"word": w, "reason": "unparseable_output",
+                                   "raw": unparseable[w][:2000]})
+                result["unparseable"] += 1
+                result["flagged"].append(w)
+                continue
             entry = by_word.get(w.lower())
+            if entry is None:
+                # The model sometimes respells the headword ("oxy genos" for
+                # "oxygenos"). Same letters, same word: take it back under ours.
+                entry = by_letters.get(re.sub(r"[^a-z0-9]", "", w.lower()))
+                if entry is not None:
+                    entry["word"] = w
+            if isinstance(entry, dict) and entry.get("exclude_reason") == "model_declined":
+                # The model reported that it would not write a normal entry.
+                # Never let that pass as an ordinary exclusion.
+                write_json_atomic(failures_dir / f"{stable_id(w)}.json",
+                                  {"word": w, "reason": "model_declined",
+                                   "note": str(entry.get("note", ""))[:500]})
+                result["declined"] += 1
+                result["flagged"].append(w)
+                continue
             if entry is None:
                 write_json_atomic(failures_dir / f"{stable_id(w)}.json",
                                   {"word": w, "reason": "missing_from_array"})
                 result["failed"] += 1
                 continue
             try:
-                cleaned = validate_entry(entry, entry.get("word", w))
+                entry.pop("meta", None)  # provenance is ours to write, not the model's
+                cleaned = validate_entry({**entry, "meta": meta}, entry.get("word", w))
             except Exception as exc:
                 write_json_atomic(failures_dir / f"{stable_id(w)}.json",
                                   {"word": w, "reason": "validation_error",
@@ -237,7 +408,11 @@ def main():
             result["excluded" if not cleaned["include"] else "ok"] += 1
         return result, None
 
-    totals = {"ok": 0, "excluded": 0, "failed": 0, "batch_error": 0, "skipped": 0}
+    totals = {"ok": 0, "excluded": 0, "failed": 0, "declined": 0, "unparseable": 0,
+              "batch_error": 0, "skipped": 0}
+    flagged_words = []
+    usage_total = dict.fromkeys(USAGE_KEYS, 0)
+    calls = 0
     started = datetime.now(timezone.utc)
     done_batches = 0
     consecutive_errors = 0
@@ -247,18 +422,24 @@ def main():
             res, note = fut.result()
             for k in totals:
                 totals[k] += res.get(k, 0)
+            flagged_words += res.get("flagged", [])
+            if "usage" in res:
+                calls += 1
+                for k in USAGE_KEYS:
+                    usage_total[k] += res["usage"].get(k, 0)
             done_batches += 1
             if res["batch_error"]:
                 consecutive_errors += 1
-            elif res["ok"] or res["excluded"]:
+            elif res["ok"] or res["excluded"] or res["declined"] or res["unparseable"]:
                 consecutive_errors = 0
             if not throttled.is_set() and consecutive_errors >= args.abort_after_consecutive_batch_errors:
                 throttled.set()
                 print(f"!! circuit breaker tripped after {consecutive_errors} consecutive batch errors "
                       f"— stopping run (reset_hint={reset_hint['seconds']}s)", flush=True)
-            if res["ok"] or res["excluded"] or res["batch_error"]:
+            if any(res[k] for k in ("ok", "excluded", "declined", "unparseable", "batch_error")):
                 msg = (f"[batch {done_batches}/{len(batches)}] "
-                       f"ok={res['ok']} excl={res['excluded']} fail={res['failed']} batch_err={res['batch_error']}")
+                       f"ok={res['ok']} excl={res['excluded']} fail={res['failed']} "
+                       f"declined={res['declined']} unparseable={res['unparseable']} batch_err={res['batch_error']}")
                 if note:
                     msg += f" :: {note}"
                 print(msg, flush=True)
@@ -270,12 +451,19 @@ def main():
         "finished_at": finished.isoformat(),
         "duration_seconds": round((finished - started).total_seconds(), 1),
         "backend": args.backend,
+        "model": args.model,
+        "prompt": meta["prompt"],
+        "slim": args.slim,
+        "web_search": args.web_search,
+        "calls": calls,
+        "usage": usage_total,
         "reasoning": args.reasoning,
         "batch_size": args.batch_size,
         "workers": args.workers,
         "words_attempted": len(todo),
         "batches": len(batches),
         "totals": totals,
+        "declined_or_unparseable_words": sorted(flagged_words),
         "aborted_rate_limited": aborted,
         "reset_seconds_hint": reset_hint["seconds"],
         "out_dir": str(args.out_dir),
