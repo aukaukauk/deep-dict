@@ -6,6 +6,16 @@ headword, optional inflected-form indexes, and the ordered sense list.
 
 import json
 from html import escape
+
+
+def attr(text):
+    """Escape text for a double-quoted XML attribute, leaving apostrophes alone.
+
+    The Dictionary Development Kit builds the search index with a Perl script
+    that decodes only the named entities, so an apostrophe written as `&#x27;`
+    (what html.escape produces) ends up in the index literally and the entry
+    can never be found. Words like hasn't need the plain character."""
+    return escape(text, quote=False).replace('"', "&quot;")
 from pathlib import Path
 
 from ..ids import stable_id
@@ -66,7 +76,7 @@ def sense_html(sense):
 def entry_xml(entry, forms):
     word = entry["word"]
     entry_id = stable_id(word)
-    title = escape(word, quote=True)
+    title = attr(word)
     indexes = [word] + forms
     seen = set()
 
@@ -76,7 +86,7 @@ def entry_xml(entry, forms):
         if key in seen:
             continue
         seen.add(key)
-        escaped_value = escape(value, quote=True)
+        escaped_value = attr(value)
         lines.append(f'    <d:index d:value="{escaped_value}" d:title="{title}"/>')
     lines.append(f'    <h1>{escape(word)}</h1>')
     lines.append("    <ol class=\"senses\">")
@@ -88,8 +98,8 @@ def entry_xml(entry, forms):
 
 
 def front_matter_xml(dict_name, entry_count):
-    return f'''  <d:entry id="frontmatter" d:title="{escape(dict_name, quote=True)}">
-    <d:index d:value="{escape(dict_name, quote=True)}"/>
+    return f'''  <d:entry id="frontmatter" d:title="{attr(dict_name)}">
+    <d:index d:value="{attr(dict_name)}"/>
     <h1>{escape(dict_name)}</h1>
     <p>英汉阅读词典，词条由 LLM 生成。</p>
     <p>Entries: {entry_count}</p>
